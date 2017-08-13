@@ -6,14 +6,18 @@
 <p>Grey line: <input id=z size=2 value=440>hz. Tempo: <input id=t size=2 value=200> (ms). Volume: <input id=v size=2 value=1>.
 <p>Click on notes (max 1 per column) and press play.
 <p><button id=p>PLAY</button>
+<p>JS export
 <p><textarea id=exp></textarea>
+<p>JS export without volume
+<p><textarea id=exp2></textarea>
+
 
 <style>
 * { box-sizing: border-box }
 #c { width: 5000px; }
 .note { width: 20px; height: 20px; float: left; border: 1px solid; }
 [line="12"] { background: #ccc }
-#exp { width: 90vh; height: 150px }
+#exp, #exp2 { width: 90vh; height: 100px }
 </style>
 
 <script>
@@ -69,5 +73,7 @@ p.onclick=()=>{
       stop((+i+1)*t.value/1e3)
 
   exp.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i]<99)G=createGain(),connect(G),G.connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),G.gain.value=${+v.value},start(i*${(""+t.value/1e3).replace("0.",".")}),stop((+i+1)*${(""+t.value/1e3).replace("0.",".")})`;
+  
+  exp2.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i]<99)connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),start(i*${(""+t.value/1e3).replace("0.",".")}),stop((+i+1)*${(""+t.value/1e3).replace("0.",".")})`;
 }
 </script>
