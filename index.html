@@ -3,15 +3,17 @@
 <body id=b>
 <div id=c></div>
 <br style=clear:both>
-<p>Grey line: <input id=z size=2 value=440>hz. Tempo: <input id=t size=2 value=300> (ms). Volume: <input id=v size=2 value=1>.
+<p>Grey line: <input id=z size=2 value=440>hz. Tempo: <input id=t size=2 value=200> (ms). Volume: <input id=v size=2 value=1>.
 <p>Click on notes (max 1 per column) and press play.
 <p><button id=p>PLAY</button>
+<p><textarea id=exp></textarea>
 
 <style>
 * { box-sizing: border-box }
 #c { width: 5000px; }
 .note { width: 20px; height: 20px; float: left; border: 1px solid; }
 [line="12"] { background: #ccc }
+#exp { width: 90vh; height: 150px }
 </style>
 
 <script>
@@ -54,30 +56,18 @@ p.onclick=()=>{
     }
   }
   
-  console.log(df);
-  
-  A = new AudioContext;
+  with(new AudioContext)
+  for(i in df)
+    with(createOscillator())
+    if(df[i]<99)
+      G=createGain(),
+      connect(G),
+      G.connect(destination),
+      frequency.value=+z.value*1.06**(13-df[i]),
+      G.gain.value=v.value,
+      start(i*t.value/1e3),
+      stop((+i+1)*t.value/1e3)
 
-  for(i in df){
-    
-    O = A.createOscillator();
-    
-    if(df[i] != 99){
-
-      G = A.createGain();
-
-      O.connect(G);
-
-      G.connect(A.destination);
-
-      O.frequency.value = +z.value * Math.pow(1.06, 13 - df[i]);
-      
-      G.gain.value = v.value;
-      
-      O.start(+i * t.value / 1000);
-      
-      O.stop((+i + 1) * t.value / 1000);
-    }
-  }
+  exp.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i]<99)G=createGain(),connect(G),G.connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),G.gain.value=${+v.value},start(i*${(""+t.value/1e3).replace("0.",".")}),stop((+i+1)*${(""+t.value/1e3).replace("0.",".")})`;
 }
 </script>
