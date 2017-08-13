@@ -1,0 +1,83 @@
+<!doctype html>
+<meta charset=utf-8>
+<body id=b>
+<div id=c></div>
+<br style=clear:both>
+<p>Grey line: <input id=z size=2 value=440>hz. Tempo: <input id=t size=2 value=300> (ms). Volume: <input id=v size=2 value=1>.
+<p>Click on notes (max 1 per column) and press play.
+<p><button id=p>PLAY</button>
+
+<style>
+* { box-sizing: border-box }
+#c { width: 5000px; }
+.note { width: 20px; height: 20px; float: left; border: 1px solid; }
+[line="12"] { background: #ccc }
+</style>
+
+<script>
+d = [];
+h='';
+for(i = 0; i < 25; i++){
+  d[i] = [];
+  for(j = 0; j < 250; j++){
+    h+='<div class=note line='+i+' id=c'+i+'_'+j+' onclick=toggle('+i+','+j+',this)></div>';
+  }
+}
+c.innerHTML = h;
+
+toggle=(i,j,t)=>{
+  d[i][j] ^= 1;
+  t.style.background = d[i][j] ? "#000" : "";
+  if(d[i][j]){
+    for(k = 0; k < 24; k++){
+      if(k != i){
+        d[k][j] = 0;
+        top["c"+k+"_"+j].style.background = "";
+      }
+    }
+  }
+}
+
+p.onclick=()=>{
+
+  df = [];
+  for(i = 0; i < 25; i++){
+    for(j = 0; j < 1000; j++){
+      if(d[i][j]){
+        df[j]=i;
+      }
+    }
+  }
+  for(i = 0; i < df.length; i++){
+    if(typeof df[i] === "undefined"){
+      df[i] = 99;
+    }
+  }
+  
+  console.log(df);
+  
+  A = new AudioContext;
+
+  for(i in df){
+    
+    O = A.createOscillator();
+    
+    if(df[i] != 99){
+
+      G = A.createGain();
+
+      O.connect(G);
+
+      G.connect(A.destination);
+
+      O.frequency.value = +z.value * Math.pow(1.06, 13 - df[i]);
+      
+      G.gain.value = v.value;
+      
+      O.start(+i * t.value / 1000);
+      
+      O.stop((+i + 1) * t.value / 1000);
+    }
+  }
+}
+</script>
