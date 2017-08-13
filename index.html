@@ -23,7 +23,7 @@
 <script>
 d = [];
 h='';
-for(i = 0; i < 25; i++){
+for(i = 1; i < 25; i++){
   d[i] = [];
   for(j = 0; j < 250; j++){
     h+='<div class=note line='+i+' id=c'+i+'_'+j+' onclick=toggle('+i+','+j+',this)></div>';
@@ -35,7 +35,7 @@ toggle=(i,j,t)=>{
   d[i][j] ^= 1;
   t.style.background = d[i][j] ? "#000" : "";
   if(d[i][j]){
-    for(k = 0; k < 24; k++){
+    for(k = 1; k < 25; k++){
       if(k != i){
         d[k][j] = 0;
         top["c"+k+"_"+j].style.background = "";
@@ -47,33 +47,33 @@ toggle=(i,j,t)=>{
 p.onclick=()=>{
 
   df = [];
-  for(i = 0; i < 25; i++){
+  for(i = 1; i < 25; i++){
     for(j = 0; j < 1000; j++){
       if(d[i][j]){
         df[j]=i;
       }
     }
   }
-  for(i = 0; i < df.length; i++){
+  /*for(i = 0; i < df.length; i++){
     if(typeof df[i] === "undefined"){
-      df[i] = 99;
+      df[i] = 0;
     }
-  }
+  }*/
   
   with(new AudioContext)
   for(i in df)
     with(createOscillator())
-    if(df[i]<99)
+    if(df[i])
       G=createGain(),
       connect(G),
       G.connect(destination),
       frequency.value=+z.value*1.06**(13-df[i]),
       G.gain.value=v.value,
       start(i*t.value/1e3),
-      stop((+i+1)*t.value/1e3)
+      stop(i*t.value/1e3+t.value/1e3)
 
-  exp.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i]<99)G=createGain(),connect(G),G.connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),G.gain.value=${+v.value},start(i*${(""+t.value/1e3).replace("0.",".")}),stop((+i+1)*${(""+t.value/1e3).replace("0.",".")})`;
+  exp.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i])G=createGain(),connect(G),G.connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),G.gain.value=${+v.value},start(i*${(""+t.value/1e3).replace("0.",".")}),stop(i*${(""+t.value/1e3).replace("0.",".")}+*${(""+t.value/1e3).replace("0.",".")})`;
   
-  exp2.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i]<99)connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),start(i*${(""+t.value/1e3).replace("0.",".")}),stop((+i+1)*${(""+t.value/1e3).replace("0.",".")})`;
+  exp2.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i])connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),start(i*${(""+t.value/1e3).replace("0.",".")}),stop(i*${(""+t.value/1e3).replace("0.",".")}+*${(""+t.value/1e3).replace("0.",".")})`;
 }
 </script>
