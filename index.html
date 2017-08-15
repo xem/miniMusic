@@ -20,6 +20,7 @@
 </style>
 
 <script>
+A = new AudioContext;
 d = [];
 h='';
 for(i = 1; i < 25; i++){
@@ -54,6 +55,8 @@ toggle=(i,j,t,f)=>{
 
 p.onclick=()=>{
 
+  A.close();
+  
   wave="sine";
   if(square.checked) wave = "square";
   if(sawtooth.checked) wave = "sawtooth";
@@ -68,7 +71,7 @@ p.onclick=()=>{
     }
   }
   
-  with(new AudioContext)
+  with(A=new AudioContext)
   for(i in df)
     with(createOscillator())
     if(df[i])
