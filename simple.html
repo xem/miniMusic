@@ -1,0 +1,94 @@
+<!doctype html>
+<meta charset=utf-8>
+<body id=b>
+<div id=c></div>
+<br style=clear:both>
+<p>Grey line: <input id=z size=2 value=440> hz. Tempo: <input id=t size=2 value=100> ms. Volume: <input id=v size=2 value=1>.
+<p>Oscillator: <input type=radio name=wave value=sine checked id=sine> sine / <input type=radio name=wave value=square id=square> square / <input type=radio name=wave value=sawtooth id=sawtooth> sawtooth / <input type=radio name=wave value=triangle id=triangle> triangle.
+<p>Click on notes (max 1 per column) and press play.
+<p><button id=p>PLAY</button>
+<p>JS export (smaller if volume = 1 & oscillator = "sine")
+<p><textarea id=exp></textarea>
+
+
+<style>
+* { box-sizing: border-box }
+#c { width: 5000px; }
+.note { width: 20px; height: 20px; float: left; border: 1px solid; }
+[line="12"] { background: #ccc }
+#exp, #exp2 { width: 90vh; height: 100px }
+</style>
+
+<script>
+A = new AudioContext;
+d = [];
+h='';
+for(i = 1; i < 25; i++){
+  d[i] = [];
+  for(j = 0; j < 250; j++){
+    h+='<div class=note line='+i+' id=c'+i+'_'+j+' onclick=toggle('+i+','+j+',this,0) onmouseover=toggle('+i+','+j+',this,1)></div>';
+  }
+}
+c.innerHTML = h;
+
+mousedown = 0;
+onmousedown=e=>{mousedown = 1;}
+onmouseup=e=>{mousedown = 0;}
+
+toggle=(i,j,t,f)=>{
+  if(f && mousedown){
+    d[i][j] = 1;
+  }
+  else if(!f){
+    d[i][j] ^= 1;
+  }
+  t.style.background = d[i][j] ? "#000" : "";
+  if(d[i][j]){
+    for(k = 1; k < 25; k++){
+      if(k != i){
+        d[k][j] = 0;
+        top["c"+k+"_"+j].style.background = "";
+      }
+    }
+  }
+}
+
+p.onclick=()=>{
+
+  A.close();
+  
+  wave="sine";
+  if(square.checked) wave = "square";
+  if(sawtooth.checked) wave = "sawtooth";
+  if(triangle.checked) wave = "triangle";
+
+  df = [];
+  for(i = 1; i < 25; i++){
+    for(j = 0; j < 1000; j++){
+      if(d[i][j]){
+        df[j]=i;
+      }
+    }
+  }
+  
+  with(A=new AudioContext)
+  for(i in df)
+    with(createOscillator())
+    if(df[i])
+      G=createGain(),
+      connect(G),
+      G.connect(destination),
+      frequency.value=+z.value*1.06**(13-df[i]),
+      G.gain.value=v.value,
+      type=wave,
+      start(i*t.value/1e3),
+      stop(i*t.value/1e3+t.value/1e3)
+
+  if(v.value != 1){
+    exp.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i])G=createGain(),connect(G),G.connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),G.gain.value=${+v.value},${(wave=="sine")?"":"type='"+wave+"',"}start(i*${(""+t.value/1e3).replace("0.",".")}),stop(i*${(""+t.value/1e3).replace("0.",".")}+${(""+t.value/1e3).replace("0.",".")})`;
+  }
+  else {
+    exp.value = `with(new AudioContext)for(i in D=[${df}])with(createOscillator())if(D[i])connect(destination),frequency.value=${+z.value}*1.06**(13-D[i]),${(wave=="sine")?"":"type='"+wave+"',"}start(i*${(""+t.value/1e3).replace("0.",".")}),stop(i*${(""+t.value/1e3).replace("0.",".")}+${(""+t.value/1e3).replace("0.",".")})`;
+  }
+}
+</script>

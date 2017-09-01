@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset=utf-8>
+<body id=b>
+<div id=c></div>
+<br style=clear:both>
+<p>Grey line: <input id=z size=2 value=440> hz. Tempo: <input id=t size=2 value=100> ms.
+<p>Oscillator: <input type=radio name=wave value=sine checked id=sine> sine / <input type=radio name=wave value=square id=square> square / <input type=radio name=wave value=sawtooth id=sawtooth> sawtooth / <input type=radio name=wave value=triangle id=triangle> triangle.
+<p>Click on notes and press play.
+<p><button id=p>PLAY</button>
+<p>JS export (smaller if volume = 1 & oscillator = "sine")
+<p><textarea id=exp></textarea>
+
+
+<style>
+* { box-sizing: border-box }
+#c { width: 5000px; }
+.note { width: 20px; height: 20px; float: left; border: 1px solid; }
+[line="13"] { background: #aaa }
+#exp, #exp2 { width: 90vh; height: 100px }
+</style>
+
+<script>
+A = new AudioContext;
+d = [];
+h='';
+for(i = 1; i < 26; i++){
+  d[i] = [];
+  for(j = 0; j < 250; j++){
+    h+='<div class=note line='+i+' id=c'+i+'_'+j+' onclick=toggle('+i+','+j+',this,0) onmouseover=toggle('+i+','+j+',this,1) '+(j == 0 && [1,3,6,8,11,13,15,18,20,23].indexOf(i-1) > -1 ? "style=background:#000": (j==0 || i == 13) ? "" : "style=background:#ddd")+'></div>';
+  }
+}
+c.innerHTML = h;
+
+mousedown = 0;
+onmousedown=e=>{mousedown = 1;}
+onmouseup=e=>{mousedown = 0;}
+
+toggle=(i,j,t,f)=>{
+  if(j==0)return;
+  if(f && mousedown){
+    d[i][j] = 1;
+  }
+  else if(!f){
+    d[i][j] ^= 1;
+  }
+  t.style.background = d[i][j] ? "#000" : i == 13 ? "#aaa" : "#ddd";
+}
+
+p.onclick=()=>{
+
+  A.close();
+  
+  wave="sine";
+  if(square.checked) wave = "square";
+  if(sawtooth.checked) wave = "sawtooth";
+  if(triangle.checked) wave = "triangle";
+
+  df = [];
+  for(i = 1; i < 26; i++){
+    for(j = 0; j < 1000; j++){
+      if(d[i][j]){
+        df.push([i,j]);
+      }
+    }
+  }
+
+
+    keys = [];
+    values = [];
+    for(i in df){
+      keys[i] = df[i][0];
+      values[i] = df[i][1];
+    }
+    //exp.value = `with(new AudioContext)for(i in D=${JSON.stringify(df)})with(createOscillator())if(D[i])connect(destination),frequency.value=${+z.value}*1.06**(14-D[i][0]),${(wave=="sine")?"":"type='"+wave+"',"}start(D[i][1]*${(""+t.value/1e3).replace("0.",".")}),stop(D[i][1]*${(""+t.value/1e3).replace("0.",".")}+${(""+t.value/1e3).replace("0.",".")})`;
+    
+    eval(exp.value = `with(new AudioContext)${JSON.stringify(keys)}.map((v,i)=>{with(createOscillator())v&&start(e=${JSON.stringify(values)}[i]/5,connect(destination),frequency.value=988/1.06**v${(wave=="sine")?"":",type='"+wave+"',"})+stop(e+.2)})`);
+}
+</script>
