@@ -1,0 +1,146 @@
+﻿<body id=b>
+<script>
+
+d = document;
+
+// =======
+//  MUS1K
+// =======
+
+// This demo allows to draw the notes of a melody on two octaves, then play and export them as a tiny JS snippet that can be used in 1k demos.
+// The user can change the frequency of the middle line (La/A 440Hz by default), the duration of each note (200ms by default), and the waveform.
+
+// --- source code ---
+
+// Draw the GUI (HTML + CSS)
+// The radio buttons set the type of waveform (w) used by the AudioContext's Oscillator, directly on click.
+// The other elements have ids or classes used by the CSS and the JS code below.
+d.write`
+  <div id=c></div>
+  <p><br><input id=z size=2 value=440> Hz /
+  <input id=t size=2 value=200> ms /
+  <input type=radio name=w onclick=w='' checked>sine <input type=radio name=w onclick=w='square'>square <input type=radio name=w onclick=w='sawtooth'>sawtooth <input type=radio name=w onclick=w='triangle'>triangle
+  <p><textarea id=x cols=90 rows=5></textarea>
+  <p><button id=p>PLAY & EXPORT
+  <style>
+    #b {
+      margin: 1em
+    }
+    #c {
+      width: 1800px
+    }
+    p {
+      clear: both
+    }
+    .n{
+      width: 18px;
+      height: 18px;
+      float: left;
+      border: 1px solid
+    }
+    [l="13"]{
+      background: #aaa
+`;
+
+// Reset the data array (d), the grid's innerHTML (h) and the default waveform (w).
+d = []; w = h = ``;
+
+// Loop on the 25 lines of the grid (loop var: i).
+for(i = 1; i < 26; i++)
+
+  // Initialize an array in d[i].
+  // Reset the mousedown flag (m).
+  // Loop on the 90 columns of the grid (loop var: j).
+  for(d[i] = [], m = j = 0; j < 90; j++)
+  
+    // Add the cell's HTML code in the string h.
+    // The background color is set to light gray for normal cells, darker grey for the middle line (440Hz), and piano key colors (black and white) for the legend (the first column).
+    h+=`<div class=n l=${i} onclick=o(${[i,j]},this,0) onmouseover=o(${[i,j]},this,1) style=background:#${
+      (!j && [1, 3, 6, 8, 11, 13, 15, 18, 20, 23].includes(i - 1)) ? `000` : (j == 0 || i == 13) ? `` : `ddd`
+    }></div>`;
+
+// Draw the grid in the div with the id "c".
+c.innerHTML = h;
+
+// Toggle the mousedown flag on mouse down and on mouse up.
+onmousedown = onmouseup = e => m ^= 1;
+
+// The function o() updated the data array (d) and the cells background after each mouse event on a cell:
+// The value of the cell is toggled (0/1) on click (d[i][j] ^= 1).
+// The value of the cell is set to 1 on hover, if the mousedown flag is set.
+// The first column is ignored (because it's the legend).
+// If the cell's value is set, its background becomes black. If it's unset, the background is reset to light or dark grey.
+o = (i, j, t, f) => j && (f && m ? d[i][j] = 1 : f || (d[i][j] ^= 1), t.style.background = d[i][j] ? `#000` : 13 == i ? `#aaa` : `#ddd`);
+
+// Click on the "play & export" button:
+p.onclick = e => {
+
+  // Initialize an array of frequencies (f).
+  f = [];
+
+  // Loop on all the lines of the grid.
+  for(i = 1; i < 26; i++)
+
+    // Loop on all the columns of the grid.
+    for(j = 0; j < 90; j++)
+
+      // If that cell is set in d, add its coordinates to f.
+      if(d[i][j])
+        f.push([i, j]);
+
+  // Initialize a keys array (k).
+  k = [];
+
+  // Initialize a values array (v).
+  v = [];
+
+  // Loop in f.
+  for(i in f)
+  
+    // Add every value of f in k and v.
+    k[i] = f[i][0],
+    v[i] = f[i][1];
+
+  // The following code generates the JS snippet that plays the music, and evaluates it:
+  eval(
+    
+    // This snippet is put in the textarea called x.
+    x.value = `
+    
+      // Use a new AudioContext implicitly (with "with").
+      with(new AudioContext)
+        
+        // The array k is written here, and we loop in its values.
+        // v represents the current value of k, and i the index of this value.
+        [${k}].map((v, i) => {
+          
+          // For each key in k, create an Oscillator and use it implicitly.
+          with(createOscillator())
+            
+            // If v is not null:
+            v && 
+
+            // The array v is written here, and v[i] is stored in e.
+            // Start the oscillator after e * (t.value / 1000) seconds.
+            // t.value is the value if the text input representing the length of each note in ms.
+            // If "t.value / 1000" is lower than 1, we use a string replace to remove the trailing 0 (ex: "0.2" => ".2").
+            start(e = [${v}][i] * ${(`` + t.value / 1e3).replace(`0.`, `.`)},
+            
+            // Connect the oscillator to the AudioContext's destination (i.e. the speakers).
+            connect(destination),
+            
+            // Set the frequency of the oscillator.
+            // This used to be done with a simple "frequency.value = f", but Chrome has deprecated this notation in 2018, in profit to "frequency.setValueAtTime(f, t)".
+            // The time (t) is usually AudioContext.currentTime, but it's set to O here to save bytes.
+            // The frequency (f) is computed with the formula F * sqrt(1/12) ^ N (where F is the middle line frequency -440Hz by default- and N is the offset between the current note's line and the middle line (+13 to -13).
+            // sqrt(1/12) is roughly 1.06.
+            // If the waveform is different than "sine" (i.e. w is different than ""), we add ",type=${w}" to the generated code to force the waveform stored in w as the oscillator's type.
+            frequency.setValueAtTime(${z.value} * 1.06 ** (12 - v), 0) ${w ? `,type = '${w}'` : ``}),
+            
+            // Stop the note after "e + (t.value / 1000)" seconds.
+            // Here again, the leading zero in "t.value / 1000" is stripped if needed.
+            stop(e + ${(`` + t.value / 1e3).replace(`0.`, `.`)})
+        })
+  `)
+}
+</script>

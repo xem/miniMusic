@@ -1,0 +1,26 @@
+﻿<body id=b>
+<script>
+
+d = document;
+
+d.write`<div id=c></div><p><br><input id=z size=2 value=440> Hz / <input id=t size=2 value=200> ms / <input type=radio name=w onclick=w='' checked>sine <input type=radio name=w onclick=w='square'>square <input type=radio name=w onclick=w='sawtooth'>sawtooth <input type=radio name=w onclick=w='triangle'>triangle<p><textarea id=x cols=90 rows=5></textarea><p><button id=p>PLAY & EXPORT<style>#b{margin:1em}#c{width:1800px}p{clear:both}.n{width:18px;height:18px;float:left;border:1px solid}[l="13"]{background:#aaa`;
+d=[];
+w=h=``;
+for(i=1;i<26;i++)
+for(d[i]=[],m=j=0;j<90;j++)
+h+=`<div class=n l=${i} onclick=o(${[i,j]},this,0) onmouseover=o(${[i,j]},this,1) style=background:#${(!j&&[1,3,6,8,11,13,15,18,20,23].includes(i-1))?`000`:(j==0||i==13)?``:`ddd`}></div>`;
+c.innerHTML=h;
+onmousedown=onmouseup=e=>m^=1;
+o=(i,j,t,f)=>j&&(f&&m?d[i][j]=1:f||(d[i][j]^=1),t.style.background=d[i][j]?`#000`:13==i?`#aaa`:`#ddd`);
+p.onclick=e=>{
+f=[];
+for(i=1;i<26;i++)
+for(j=0;j<90;j++)
+if(d[i][j])f.push([i,j]);
+k=[];
+v=[];
+for(i in f)k[i]=f[i][0],v[i]=f[i][1];
+eval(x.value=`with(new AudioContext)[${k}].map((v,i)=>{with(createOscillator())v&&start(e=[${v}][i]*${(``+t.value/1e3).replace(`0.`,`.`)},connect(destination),frequency.setValueAtTime(${z.value}*1.06**(12-v),0)${w?`,type='${w}'`:``}),stop(e+${(``+t.value/1e3).replace(`0.`,`.`)})})`)
+}
+
+</script>
